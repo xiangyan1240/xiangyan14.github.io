@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>长沙理工大学金盆岭校区周边美食</title>
+    <style>
+        :root {
+            --bg-color: #f8f9fa;
+            --card-bg: #fff;
+            --text-main: #333;
+            --text-sub: #666;
+            --link-color: #007bff;
+            --link-hover: #0056b3;
+            --nav-bg: #333;
+            --nav-text: #fff;
+            --collect-active: #ff3838;
+        }
+        .dark-mode {
+            --bg-color: #1a1a1a;
+            --card-bg: #2d2d2d;
+            --text-main: #eee;
+            --text-sub: #ccc;
+            --link-color: #4dabf7;
+            --link-hover: #74c0fc;
+            --nav-bg: #222;
+            --nav-text: #eee;
+        }
+        body {
+            font-family: "Microsoft YaHei", sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-sub);
+            transition: background-color 0.3s ease, color 0.3s ease;
+            overflow-x: hidden;
+        }
+        /* 鼠标跟随粒子特效容器 */
+        .particle-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+        }
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            background: var(--link-color);
+            opacity: 0.7;
+            pointer-events: none;
+            animation: particleFade 1s ease forwards;
+        }
+        @keyframes particleFade {
+            0% { transform: scale(1); opacity: 0.7; }
+            100% { transform: scale(0); opacity: 0; }
+        }
+        /* 导航栏 */
+        .nav {
+            background-color: var(--nav-bg);
+            padding: 15px 0;
+            position: sticky;
+            top: 0;
+            z-index: 999;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            align-items: center;
+        }
+        .nav a {
+            color: var(--nav-text);
+            text-decoration: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            transition: background-color 0.3s ease;
+        }
+        .nav a:hover {
+            background-color: var(--link-color);
+            color: var(--nav-text);
+        }
+        .mode-btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 4px;
+            background-color: var(--link-color);
+            color: var(--nav-text);
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-left: 15px;
+        }
+        .mode-btn:hover {
+            background-color: var(--link-hover);
+        }
+        /* 页面切换容器 */
+        .page-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        .page {
+            display: none;
+            padding: 30px 0;
+            animation: fadeIn 0.5s ease;
+        }
+        .page.active {
+            display: block;
+        }
+        /* 顶部信息栏（时钟+访问量+收藏数） */
+        .top-bar {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+            color: var(--text-sub);
+            border-bottom: 1px solid #eee;
+        }
+        .visit-count, .clock, .collect-count {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        /* 数字滚动动画 */
+        .num-scroll {
+            transition: all 0.5s ease;
+        }
+        /* 轮播图样式 */
+        .carousel {
+            max-width: 1000px;
+            margin: 0 auto 30px;
+            position: relative;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .carousel-inner {
+            display: flex;
+            transition: transform 0.5s ease;
+            width: 100%;
+            height: 300px;
+        }
+        .carousel-item {
+            flex: 0 0 100%;
+            height: 100%;
+        }
+        .carousel-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .carousel-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.7);
+            border: none;
+            cursor: pointer;
+            font-size: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+        }
+        .prev-btn {
+            left: 10px;
+        }
+        .next-btn {
+            right: 10px;
+        }
+        .carousel-indicators {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 8px;
+        }
+        .indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.5);
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .indicator.active {
+            background: var(--link-color);
+        }
+        /* 首页样式 */
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        h1, h2, h3 {
+            color: var(--text-main);
+            margin: 0 0 20px 0;
+            font-weight: bold;
+        }
+        .student-info {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 18px;
+            font-weight: 500;
+            line-height: 1.8;
+        }
+        .food-container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .food-item {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+            opacity: 0;
+            animation: slideUp 0.6s ease forwards;
+            position: relative;
+            overflow: hidden;
+        }
+        /* 美食卡片悬浮粒子效果 */
+        .food-item::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(0,123,255,0.1) 0%, transparent 70%);
+            transform: rotate(30deg);
+            transition: all 0.5s ease;
+            opacity: 0;
+        }
+        .food-item:hover::before {
+            opacity: 1;
+            transform: rotate(30deg) translate(20%, 20%);
+        }
+        .food-item:nth-child(1) { animation-delay: 0.1s; }
+        .food-item:nth-child(2) { animation-delay: 0.3s; }
+        .food-item:nth-child(3) { animation-delay: 0.5s; }
+        .food-item:hover {
+            transform: translateY(-5px);
+        }
+        .food-img {
+            width: 220px;
+            height: 180px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-right: 25px;
+            border: 2px solid #f0f0f0;
+            cursor: zoom-in;
+            transition: transform 0.2s ease;
+        }
+        .food-img:hover {
+            transform: scale(1.02);
+        }
+        .food-info {
+            flex: 1;
+        }
+        .food-info h2 {
+            font-size: 20px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .collect-btn {
+            background: transparent;
+            border: none;
+            color: #ccc;
+            font-size: 18px;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+        .collect-btn.active {
+            color: var(--collect-active);
+        }
+        .food-info p {
+            line-height: 1.6;
+            margin: 0 0 8px 0;
+            opacity: 0;
+            animation: fadeIn 0.8s ease forwards;
+        }
+        .food-info p:nth-child(2) { animation-delay: 0.4s; }
+        .food-info p:nth-child(3) { animation-delay: 0.5s; }
+        .food-info p:nth-child(4) { animation-delay: 0.6s; }
+        .food-info p:nth-child(5) { animation-delay: 0.7s; }
+        .food-info a {
+            text-decoration: underline;
+            color: var(--link-color);
+            font-weight: 500;
+        }
+        .food-info a:hover {
+            color: var(--link-hover);
+        }
+        /* 投票页样式 */
+        .vote-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            animation: fadeIn 0.8s ease;
+        }
+        .vote-title {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .vote-item {
+            margin-bottom: 25px;
+            padding: 20px;
+            border-radius: 6px;
+            border: 1px solid #eee;
+            transition: all 0.3s ease;
+            opacity: 0;
+            animation: slideUp 0.6s ease forwards;
+        }
+        .vote-item:nth-child(1) { animation-delay: 0.2s; }
+        .vote-item:nth-child(2) { animation-delay: 0.4s; }
+        .vote-item:nth-child(3) { animation-delay: 0.6s; }
+        .vote-item:hover {
+            border-color: var(--link-color);
+            box-shadow: 0 0 8px rgba(0,123,255,0.1);
+        }
+        .vote-item h3 {
+            color: var(--text-main);
+            margin: 0 0 15px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .vote-item h3 img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        .progress-bar {
+            height: 12px;
+            background-color: #eee;
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+        .progress {
+            height: 100%;
+            background-color: var(--link-color);
+            width: 0;
+            transition: width 1s ease;
+        }
+        .vote-btn {
+            padding: 8px 20px;
+            border: none;
+            border-radius: 4px;
+            background-color: var(--link-color);
+            color: #fff;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .vote-btn:hover {
+            background-color: var(--link-hover);
+        }
+        .vote-count {
+            color: var(--text-main);
+            font-weight: 500;
+            margin-left: 10px;
+        }
+        /* 图片预览弹窗 */
+        .img-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            animation: fadeIn 0.3s ease;
+        }
+        .modal-content {
+            max-width: 90%;
+            max-height: 90%;
+            border-radius: 8px;
+            position: relative;
+        }
+        .close-modal {
+            position: absolute;
+            top: -20px;
+            right: -20px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #fff;
+            color: #333;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        /* 动画效果 */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        /* 响应式适配 */
+        @media (max-width: 768px) {
+            .food-item {
+                flex-direction: column;
+                text-align: center;
+            }
+            .food-img {
+                margin-right: 0;
+                margin-bottom: 15px;
+            }
+            .nav-container {
+                gap: 10px;
+            }
+            .nav a, .mode-btn {
+                padding: 6px 10px;
+                font-size: 14px;
+            }
+            .vote-container {
+                padding: 20px;
+            }
+            .top-bar {
+                flex-direction: column;
+                gap: 5px;
+                text-align: center;
+            }
+            .carousel {
+                height: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 鼠标跟随粒子特效容器 -->
+    <div class="particle-container" id="particleContainer"></div>
+
+    <!-- 顶部信息栏（实时时钟+访问量+收藏数） -->
+    <div class="top-bar">
+        <div class="clock">⏰ <span id="current-time"></span></div>
+        <div class="visit-count">👁️ 页面访问量：<span id="visit-num" class="num-scroll">0</span></div>
+        <div class="collect-count">❤️ 累计收藏：<span id="collect-total" class="num-scroll">0</span></div>
+    </div>
+
+    <!-- 导航栏（含页面切换+暗黑模式） -->
+    <div class="nav">
+        <div class="nav-container">
+            <a href="javascript:switchPage('home')" class="nav-link active">美食介绍</a>
+            <a href="javascript:switchPage('vote')" class="nav-link">美食投票</a>
+            <a href="https://www.mcdonalds.com.cn/" target="_blank">麦当劳官网</a>
+            <a href="https://www.dianping.com/" target="_blank">大众点评</a>
+            <a href="https://map.baidu.com/" target="_blank">查店址</a>
+            <a href="https://www.ele.me/" target="_blank">饿了么</a>
+            <a href="https://www.meituan.com/" target="_blank">美团</a>
+            <a href="https://www.mafengwo.cn/" target="_blank">马蜂窝美食攻略</a>
+            <a href="https://cs.bendibao.com/" target="_blank">长沙本地宝</a>
+            <a href="https://www.csust.edu.cn/" target="_blank">长沙理工大学官网</a>
+            <button class="mode-btn" onclick="toggleDarkMode()">暗黑模式</button>
+        </div>
+    </div>
+
+    <!-- 页面容器 -->
+    <div class="page-container">
+        <!-- 首页：美食介绍 -->
+        <div class="page active" id="home">
+            <div class="header">
+                <div class="student-info">
+                    姓名: 向妍 | 学号: 202425180121<br>
+                    自我介绍: 热爱美食与生活的长沙理工大学在校生，热衷发掘校园周边好吃又实惠的美食小店~<br>
+                    前一学号: 刘禹涵 | 学号: 202425180120<br>
+                    后一学号: 田娅岚 | 学号: 202425180122
+                </div>
+                <h1>长沙理工大学金盆岭校区周边美食</h1>
+            </div>
+
+            <!-- 新增轮播图 -->
+            <div class="carousel">
+                <div class="carousel-inner" id="carouselInner">
+                    <div class="carousel-item">
+                        <img src="https://images.unsplash.com/photo-1554118811-1e0d58224f24?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="麦当劳门店">
+                    </div>
+                    <div class="carousel-item">
+                        <img src="https://images.pexels.com/photos/1639565/pexels-photo-1639565.jpeg?auto=compress&cs=tinysrgb&w=800" alt="双层吉士汉堡">
+                    </div>
+                    <div class="carousel-item">
+                        <img src="https://images.unsplash.com/photo-1551782450-17144efb9c50?ixlib=rb-4.0.3&auto=format&fit=crop&w=800" alt="麦当劳薯条">
+                    </div>
+                </div>
+                <button class="carousel-btn prev-btn" onclick="changeCarousel(-1)">‹</button>
+                <button class="carousel-btn next-btn" onclick="changeCarousel(1)">›</button>
+                <div class="carousel-indicators">
+                    <span class="indicator active" onclick="goToCarousel(0)"></span>
+                    <span class="indicator" onclick="goToCarousel(1)"></span>
+                    <span class="indicator" onclick="goToCarousel(2)"></span>
+                </div>
+            </div>
+
+            <div class="food-container">
+                <div class="food-item">
+                    <img src="https://images.unsplash.com/photo-1554118811-1e0d58224f24?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" class="food-img" alt="麦当劳门店实拍" onclick="openModal(this.src)">
+                    <div class="food-info">
+                        <h2>麦当劳（长沙理工大学金盆岭校区东南2门体育馆门）
+                            <button class="collect-btn" onclick="collect(1)">❤️</button>
+                        </h2>
+                        <p>📍 地址：长沙市天心区赤岭路45号东南2门体育馆门对面</p>
+                        <p>🕒 营业时间：5:00-23:00 | 💰 人均：25-40元</p>
+                        <p>📱 推荐菜品：双层吉士堡、薯条</p>
+                        <p>✨ 特色：近体育馆门，通勤/运动后就餐超方便，支持校园专享优惠（凭学生证享套餐85折），环境干净整洁，设有充电插座和舒适座位，适合自习间隙补充能量。</p>
+                        <p>💡 点击查看：<a href="https://www.mcdonalds.com.cn/menu" target="_blank">麦当劳全品类菜单</a></p>
+                    </div>
+                </div>
+                <div class="food-item">
+                    <img src="https://images.pexels.com/photos/1639565/pexels-photo-1639565.jpeg?auto=compress&cs=tinysrgb&w=800" class="food-img" alt="双层吉士汉堡实拍" onclick="openModal(this.src)">
+                    <div class="food-info">
+                        <h2>双层吉士汉堡
+                            <button class="collect-btn" onclick="collect(2)">❤️</button>
+                        </h2>
+                        <p>🍔 核心配料：双层100%纯牛肉饼+双层香浓芝士片+酸黄瓜+经典酱汁+松软芝麻面包胚</p>
+                        <p>👅 口感体验：牛肉饼鲜嫩多汁，芝士融化拉丝，酸黄瓜清爽解腻，层次丰富且饱腹感强，是经典主食选择。</p>
+                        <p>💡 学生党优选：单点约15元，搭配可乐+薯条的套餐性价比更高，自习、上课前快速补充能量超合适。</p>
+                    </div>
+                </div>
+                <div class="food-item">
+                    <img src="https://images.unsplash.com/photo-1551782450-17144efb9c50?ixlib=rb-4.0.3&auto=format&fit=crop&w=800" class="food-img" alt="麦当劳薯条实拍" onclick="openModal(this.src)">
+                    <div class="food-info">
+                        <h2>金黄酥脆薯条
+                            <button class="collect-btn" onclick="collect(3)">❤️</button>
+                        </h2>
+                        <p>🥔 核心配料：精选马铃薯，切条后低温慢炸再高温脆化，撒上适量食盐调味</p>
+                        <p>👅 口感体验：外皮酥脆干爽，内里绵密软糯，薯香浓郁纯粹，咸度适中不腻口，趁热吃口感最佳。</p>
+                        <p>💡 学生党优选：小份8元，中份10元，搭配番茄酱酸甜解腻，单人解馋或多人分享都合适，是快餐经典搭配单品。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 创新页：美食投票 -->
+        <div class="page" id="vote">
+            <div class="vote-container">
+                <h1 class="vote-title">校园周边美食人气投票</h1>
+                <div class="vote-item">
+                    <h3>
+                        <img src="https://images.pexels.com/photos/1639565/pexels-photo-1639565.jpeg?auto=compress&cs=tinysrgb&w=800" alt="双层吉士汉堡">
+                        双层吉士汉堡
+                    </h3>
+                    <div class="progress-bar">
+                        <div class="progress" id="progress1"></div>
+                    </div>
+                    <button class="vote-btn" onclick="vote(1)">投票</button>
+                    <span class="vote-count" id="count1">0 票</span>
+                </div>
+                <div class="vote-item">
+                    <h3>
+                        <img src="https://images.unsplash.com/photo-1551782450-17144efb9c50?ixlib=rb-4.0.3&auto=format&fit=crop&w=800" alt="薯条">
+                        金黄酥脆薯条
+                    </h3>
+                    <div class="progress-bar">
+                        <div class="progress" id="progress2"></div>
+                    </div>
+                    <button class="vote-btn" onclick="vote(2)">投票</button>
+                    <span class="vote-count" id="count2">0 票</span>
+                </div>
+                <div class="vote-item">
+                    <h3>
+                        <img src="https://images.unsplash.com/photo-1563379926898-05f4575a45d8?ixlib=rb-4.0.3&auto=format&fit=crop&w=800" alt="麦辣鸡翅">
+                        麦辣鸡翅
+                    </h3>
+                    <div class="progress-bar">
+                        <div class="progress" id="progress3"></div>
+                    </div>
+                    <button class="vote-btn" onclick="vote(3)">投票</button>
+                    <span class="vote-count" id="count3">0 票</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 图片预览弹窗 -->
+    <div class="img-modal" id="imgModal">
+        <img class="modal-content" id="modalImg">
+        <button class="close-modal" onclick="closeModal()">×</button>
+    </div>
+
+    <script>
+        // 1. 页面切换功能
+        function switchPage(pageId) {
+            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+            document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        // 2. 暗黑模式切换
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
+        }
+        // 记住暗黑模式状态
+        if(localStorage.getItem('darkMode') === 'true') document.body.classList.add('dark-mode');
+
+        // 3. 投票功能
+        let votes = [0, 0, 0];
+        function vote(index) {
+            votes[index-1]++;
+            let total = votes.reduce((a,b)=>a+b,0);
+            votes.forEach((v,i)=>{
+                let percent = total>0 ? (v/total)*100 : 0;
+                document.getElementById(`progress${i+1}`).style.width = `${percent}%`;
+                document.getElementById(`count${i+1}`).textContent = `${v} 票`;
+            });
+            // 投票时添加粒子特效
+            createParticle(event.clientX, event.clientY);
+            alert('投票成功！');
+        }
+
+        // 4. 图片预览弹窗
+        const modal = document.getElementById('imgModal');
+        const modalImg = document.getElementById('modalImg');
+        function openModal(src) {
+            modal.style.display = 'flex';
+            modalImg.src = src;
+            document.body.style.overflow = 'hidden';
+        }
+        function closeModal() {
+            modal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+        // 点击弹窗背景关闭
+        modal.onclick = (e) => e.target === modal && closeModal();
+
+        // 5. 实时时钟
+        function updateTime() {
+            let now = new Date();
+            let timeStr = now.toLocaleString('zh-CN', {
+                year: 'numeric', month: '2-digit', day: '2-digit',
+                hour: '2-digit', minute: '2-digit', second: '2-digit',
+                hour12: false
+            });
+            document.getElementById('current-time').textContent = timeStr;
+        }
+        updateTime();
+        setInterval(updateTime, 1000);
+
+        // 6. 访问量统计（本地存储，刷新不重置）+ 数字滚动动画
+        let visitNum = localStorage.getItem('visitCount') || 0;
+        visitNum++;
+        localStorage.setItem('visitCount', visitNum);
+        // 数字滚动函数
+        function numScroll(targetId, targetNum) {
+            let currentNum = 0;
+            const step = Math.ceil(targetNum / 30);
+            const timer = setInterval(() => {
+                currentNum += step;
+                if (currentNum >= targetNum) {
+                    currentNum = targetNum;
+                    clearInterval(timer);
+                }
+                document.getElementById(targetId).textContent = currentNum;
+            }, 20);
+        }
+        numScroll('visit-num', visitNum);
+
+        // 7. 美食收藏功能（本地存储记忆）
+        let collected = JSON.parse(localStorage.getItem('collected') || '[]');
+        let collectTotal = collected.filter(item => item).length;
+        numScroll('collect-total', collectTotal);
+        // 初始化收藏状态
+        collected.forEach((isCollected, index) => {
+            if(isCollected && index < document.querySelectorAll('.collect-btn').length) {
+                document.querySelectorAll('.collect-btn')[index].classList.add('active');
+            }
+        });
+        function collect(index) {
+            const btn = document.querySelectorAll('.collect-btn')[index-1];
+            const isActive = btn.classList.contains('active');
+            if(isActive) {
+                btn.classList.remove('active');
+                collected[index-1] = false;
+                collectTotal--;
+            } else {
+                btn.classList.add('active');
+                collected[index-1] = true;
+                collectTotal++;
+                // 收藏时添加粒子特效
+                createParticle(event.clientX, event.clientY);
+            }
+            numScroll('collect-total', collectTotal);
+            localStorage.setItem('collected', JSON.stringify(collected));
+            alert(isActive ? '取消收藏成功！' : '收藏成功！');
+        }
+
+        // 8. 轮播图功能
+        let currentCarousel = 0;
+        const carouselItems = document.querySelectorAll('.carousel-item');
+        const indicators = document.querySelectorAll('.indicator');
+        function changeCarousel(direction) {
+            currentCarousel += direction;
+            if (currentCarousel < 0) currentCarousel = carouselItems.length - 1;
+            if (currentCarousel >= carouselItems.length) currentCarousel = 0;
+            updateCarousel();
+        }
+        function goToCarousel(index) {
+            currentCarousel = index;
+            updateCarousel();
+        }
+        function updateCarousel() {
+            document.getElementById('carouselInner').style.transform = `translateX(-${currentCarousel * 100}%)`;
+            indicators.forEach((ind, i) => {
+                ind.classList.toggle('active', i === currentCarousel);
+            });
+        }
+        // 自动轮播
+        setInterval(() => changeCarousel(1), 3000);
+
+        // 9. 鼠标跟随粒子特效（修正后）
+        function createParticle(x, y) {
+            // 容错：判断容器是否存在
+            const particleContainer = document.getElementById('particleContainer');
+            if (!particleContainer) return;
+            
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            
+            // 随机大小和位置偏移（修正模板字符串语法）
+            const size = Math.random() * 10 + 5;
+            const offsetX = Math.random() * 20 - 10;
+            const offsetY = Math.random() * 20 - 10;
+            
+            particle.style.width = `${size}px`;
+            particle.style.height = `${size}px`;
+            particle.style.left = `${x + offsetX}px`;
+            particle.style.top = `${y + offsetY}px`;
+            
+            particleContainer.appendChild(particle);
+            
+            // 移除粒子
+            setTimeout(() => {
+                particle.remove();
+            }, 1000);
+        }
+        
+        // 鼠标移动时创建粒子
+        document.addEventListener('mousemove', (e) => {
+            if (Math.random() > 0.95) { // 控制粒子生成频率
+                createParticle(e.clientX, e.clientY);
+            }
+        });
+    </script>
+</body>
+</html>
